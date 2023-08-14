@@ -56,6 +56,8 @@ pub struct FfmpegBuilder<'a> {
     pub options: Vec<Parameter<'a>>,
     /// The input files.
     pub inputs: Vec<File<'a>>,
+    /// The global options.
+    pub options2: Vec<Parameter<'a>>,
     /// The output files.
     pub outputs: Vec<File<'a>>,
 
@@ -103,6 +105,7 @@ impl<'a> FfmpegBuilder<'a> {
         FfmpegBuilder {
             options: Vec::new(),
             inputs: Vec::new(),
+            options2: Vec::new(),
             outputs: Vec::new(),
             ffmpeg_command: "ffmpeg",
             stdin: Stdio::null(),
@@ -114,6 +117,13 @@ impl<'a> FfmpegBuilder<'a> {
     /// Adds an option.
     pub fn option(mut self, option: Parameter<'a>) -> Self {
         self.options.push(option);
+
+        self
+    }
+
+    /// Adds an option - after  input file
+    pub fn option2(mut self, option: Parameter<'a>) -> Self {
+        self.options2.push(option);
 
         self
     }
@@ -165,6 +175,9 @@ impl<'a> FfmpegBuilder<'a> {
         }
         for input in self.inputs {
             input.push_to(&mut command, true);
+        }
+        for option in self.options2 {
+            option.push_to(&mut command);
         }
         for output in self.outputs {
             output.push_to(&mut command, false)

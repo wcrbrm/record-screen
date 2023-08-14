@@ -1,3 +1,4 @@
+use serde::Serialize;
 use std::{process::Child, time::Duration};
 
 use futures::{
@@ -29,21 +30,28 @@ pub struct Ffmpeg {
 /// Everything is wrapped in an option because this has no docs I can find, so I can't guarantee
 /// that they will all be in the data ffmpeg sends.
 /// Note that bitrate is ignored because I'm not sure of the exact format it's in. Blame ffmpeg.  
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default, Serialize)]
 pub struct Progress {
     /// What frame ffmpeg is on.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub frame: Option<u64>,
     /// What framerate ffmpeg is processing at.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub fps: Option<f64>,
     /// How much data ffmpeg has output so far, in bytes.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub total_size: Option<u64>,
     /// How far ffmpeg has processed.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub out_time: Option<Duration>,
     /// How many frames were duplicated? The meaning is unclear.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dup_frames: Option<u64>,
     /// How many frames were dropped.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub drop_frames: Option<u64>,
     /// How fast it is processing, relative to 1x playback speed.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub speed: Option<f64>,
     /// What ffmpeg will do now.
     pub status: Status,
@@ -89,7 +97,7 @@ impl Progress {
 }
 
 /// What ffmpeg is going to do next.
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize)]
 pub enum Status {
     /// Ffmpeg will continue emitting progress events.
     Continue,
@@ -152,6 +160,7 @@ impl<'a> FfmpegBuilder<'a> {
 
         self = self.option(Parameter::KeyValue("progress", &prog_url));
         let mut command = self.to_command();
+        println!("command {:?}", command);
         let child = command.spawn()?;
 
         let conn = listener.accept().await?.0;

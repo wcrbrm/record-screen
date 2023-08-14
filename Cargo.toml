@@ -6,12 +6,22 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = { version = "0.4.26", default-features = false, features = ["clock"] }
-clap = { version = "4.3.19", features = ["derive", "env"] }
-color-eyre = { version = "0.6.2", default-features = false }
-dirs = "5.0.1"
-futures = "0.3.28"
-nix = { version = "0.26.2", default-features = false, features = ["signal"] }
-num-format = "0.4.4"
-thiserror = "1.0.44"
-tokio = { version = "1.29.1", features = ["full"] }
+anyhow = "1"
+atty = "0.2.14"
+axum = "0.6.20"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+clap = { version = "4", features = ["derive", "env"] }
+color-eyre = { version = "0.6", default-features = false }
+ctrlc = "3.4"
+dirs = "5"
+futures = "0.3"
+nix = { version = "0.26", default-features = false, features = ["signal"] }
+num-format = "0.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+tokio = { version = "1", features = ["full"] }
+tower-http = { version = "0.4.3", features = ["cors", "tokio", "trace", "limit", "fs", "normalize-path"] }
+tracing = "0.1.37"
+tracing-error = "0.2.0"
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }

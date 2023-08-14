@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Screen Recording Server</title>
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1"
+		/>
+		<style>
+			html,
+			body {
+				background: #ccc;
+				font-family: -apple-system, BlinkMacSystemFont,
+					Segoe UI, Roboto, Oxygen, Ubuntu,
+					Cantarell, Fira Sans, Droid Sans,
+					Helvetica Neue, sans-serif;
+			}
+			.btn {
+				font-size: 32px;
+				padding: 10px 32px;
+				margin-bottom: 0;
+
+				display: inline-block;
+				text-decoration: none;
+				text-align: center;
+				white-space: nowrap;
+				vertical-align: middle;
+				-ms-touch-action: manipulation;
+				touch-action: manipulation;
+				cursor: pointer;
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+				background-image: none;
+				border: 1px solid transparent;
+
+				border-radius:5px;
+			}
+			.btn:focus,
+			.btn:active:focus {
+				outline: thin dotted;
+				outline: 5px auto -webkit-focus-ring-color;
+				outline-offset: -2px;
+			}
+			.btn:hover,
+			.btn:focus {
+				color: #333;
+				text-decoration: none;
+			}
+			.btn:active {
+				background-image: none;
+				outline: 0;
+				-webkit-box-shadow: inset 0 3px 5px
+					rgba(0, 0, 0, 0.125);
+				box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+			}
+
+			.btn-success {
+				background-color: #5cb85c;
+				color: white;
+			}
+			.btn-danger {
+				background-color: #d9534f;
+				color: white;
+			}
+
+			#statusHeader {
+				text-align: center;
+				margin-bottom: 20px;
+			}
+			#actionContainer {
+				text-align: center;
+				margin-bottom: 20px;
+			}
+			.share {
+				text-align: center;
+				font-size: 14px;
+				margin-top: 20px;
+			}
+		</style>
+
+		<script>
+			const ROOT = "";
+			const API = {
+				status: () => {
+					return fetch(ROOT + "/api/status").then(
+						(res) => res.json()
+					);
+				},
+				start: () => {
+					// post request to start recording
+					const payload = { audio: true };
+					fetch(ROOT + "/api/start", {
+						method: "POST",
+						body: JSON.stringify(payload),
+						headers: {
+							"Content-Type":
+								"application/json",
+						},
+					});
+				},
+				stop: () => {
+					// post request to stop recording
+					fetch(ROOT + "/api/stop", {
+						method: "POST",
+						headers: {
+							"Content-Type":
+								"application/json",
+						},
+					});
+				},
+			};
+		</script>
+	</head>
+	<body>
+		<h1 id="statusHeader"></h1>
+		<div id="actionContainer"></div>
+		<script>
+			// update status every second
+			const btnStart = document.createElement("button");
+			btnStart.className = "btn btn-success";
+			btnStart.innerHTML = "Start";
+			btnStart.onclick = API.start;
+			const btnStop = document.createElement("button");
+			btnStop.className = "btn btn-danger";
+			btnStop.innerHTML = "Stop";
+			btnStop.onclick = API.stop;
+			const status = document.getElementById("statusHeader");
+			const action =
+				document.getElementById("actionContainer");
+
+			setInterval(() => {
+				API.status().then((data) => {
+					console.log(data);
+					if (!data || !data.type) return {};
+					const canRecord =
+						data.type == "Done" ||
+						data.type == "Waiting";
+					const canStop = data.type == "Started";
+					const canShare = data.type == "Done";
+
+					status.innerHTML = data.type;
+					action.innerHTML = "";
+					if (canRecord) {
+						action.appendChild(btnStart);
+					}
+					if (canStop) {
+						action.appendChild(btnStop);
+					}
+					if (canShare) {
+						const divShare =
+							document.createElement(
+								"div"
+							);
+						divShare.className = "share";
+						divShare.innerHTML = data.file;
+						action.appendChild(divShare);
+					}
+				});
+			}, 1000);
+		</script>
+	</body>
+</html>
