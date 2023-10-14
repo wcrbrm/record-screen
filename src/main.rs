@@ -22,9 +22,6 @@ enum CliCommand {
         /// Net listening address of HTTP server in case of "server" command
         #[clap(short, long, default_value = "0.0.0.0:8000", env = "LISTEN")]
         listen: String,
-        /// Public Dir
-        #[clap(short, long, default_value = "./public", env = "WEB_DIR")]
-        public_dir: String,
     },
 }
 
@@ -42,9 +39,9 @@ async fn main() {
 
     let opt = Opts::parse();
     match opt.cmd {
-        CliCommand::Server { listen, public_dir } => {
+        CliCommand::Server { listen } => {
             let socket_addr: std::net::SocketAddr = listen.parse().expect("invalid bind to listen");
-            endpoints::run(socket_addr, &public_dir).await.unwrap();
+            endpoints::run(socket_addr).await.unwrap();
         }
         CliCommand::Start { audio } => {
             // start recording

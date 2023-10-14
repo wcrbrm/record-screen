@@ -6,7 +6,6 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::limit::RequestBodyLimitLayer;
-use tower_http::services::ServeDir;
 use tower_http::trace::*;
 use tracing::*;
 
@@ -37,15 +36,13 @@ pub async fn handle_stop(
 
 use std::net::SocketAddr;
 
-pub async fn run(socket_addr: SocketAddr, public_dir: &str) -> anyhow::Result<()> {
-    let serve_dir = ServeDir::new(public_dir);
+pub async fn run(socket_addr: SocketAddr) -> anyhow::Result<()> {
     let shared_state = Arc::new(Mutex::new(RecordingState::Waiting));
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods(Any)
         .allow_headers(Any);
     let app = Router::new()
-        .nest_service("/", serve_dir.clone())
         .route("/api/start", post(handle_start))
         .route("/api/stop", post(handle_stop))
         .route("/api/status", get(handle_status))
@@ -61,6 +58,13 @@ pub async fn run(socket_addr: SocketAddr, public_dir: &str) -> anyhow::Result<()
                         .level(Level::INFO)
                         .include_headers(true),
                 ),
+        )
+        .route(
+            "/",
+            get(|| async {
+                let contents = include_str!("../public/index.html");
+                Html(contents)
+            }),
         )
         .layer(cors);
 
